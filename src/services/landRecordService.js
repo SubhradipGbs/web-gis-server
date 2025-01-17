@@ -13,7 +13,8 @@ const getAllRecords = async () => {
 
     const columnList = columnsResult[0]?.columns;
     const results = await sequelize.query(
-      `SELECT ${columnList} FROM vw_land_records LIMIT :limit OFFSET :offset`,
+      // `SELECT ${columnList} FROM vw_land_records LIMIT :limit OFFSET :offset`,
+      `SELECT ${columnList} FROM vw_land_records`,
       {
         type: sequelize.QueryTypes.SELECT,
         replacements: { limit: 10, offset: 0 },
