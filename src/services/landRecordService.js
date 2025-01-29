@@ -20,13 +20,25 @@ const getAllRecords = async () => {
         replacements: { limit: 10, offset: 0 },
       }
     );
-    return results;
+    const filteredData = results.filter(
+      (data) => data.category !== "RECORD NOT FOUND"
+    );
+    return filteredData;
   } catch (error) {
     throw error;
   }
 };
 
-module.exports = { getAllRecords };
+const getAllMasterLands = async () => {
+  try {
+    const results = await sequelize.query("SELECT * FROM master_land_plots", {
+      type: sequelize.QueryTypes.SELECT,
+    });
+    return results;
+  } catch (err) {}
+};
+
+module.exports = { getAllRecords, getAllMasterLands };
 
 // await sequelize.query("SELECT * FROM vw_land_records LIMIT :limit OFFSET :offset", {
 //   type: sequelize.QueryTypes.SELECT,
