@@ -10,20 +10,36 @@ const login = async (email, password) => {
         type: sequelize.QueryTypes.SELECT,
       }
     );
+
     const user = results[0];
-    if (user) {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (isMatch) {
-        // await createUserLog({userId:user.email,action:'Login',})
-        return user;
-      } else {
-        return [];
-      }
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      const error = new Error("Invalid credentials");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    return user;
+
   } catch (error) {
-    throw error;
+    if (error.statusCode) {
+      throw error;
+    }
+
+    const serverError = new Error("Internal server error");
+    serverError.statusCode = 500;
+    throw serverError;
   }
 };
+
 
 const createUserLog = async (log) => {
   try {

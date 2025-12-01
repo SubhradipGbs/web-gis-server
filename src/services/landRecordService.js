@@ -12,68 +12,64 @@ const getAllRecords = async () => {
     );
 
     const columnList = columnsResult[0]?.columns;
+
+    if (!columnList) {
+      const error = new Error("No columns found for vw_land_records");
+      error.statusCode = 404;
+      throw error;
+    }
+
+
     const results = await sequelize.query(
       // `SELECT ${columnList} FROM vw_land_records LIMIT :limit OFFSET :offset`,
       `SELECT ${columnList} FROM vw_land_records`,
-      // `SELECT
-      //     plot_id,
-      //     objectid,
-      //     mouza_name,
-      //     category,
-      //     lr_plot_no,
-      //     rs_plot_no,
-      //     total_area_in_acres,
-      //     classification,
-      //     present_use,
-      //     JSON_AGG(
-      //         JSON_BUILD_OBJECT(
-      //             'owner_name', owner_name_or_raiayat,
-      //             'lr_khatian_no', lr_khatian_no,
-      //             'owner_address_or_raiayat', owner_address_or_raiayat,
-      //             'owner_share_in_plot', owner_share_in_plot
-      //         )
-      //     ) AS owner,
-      //     area_owned_in_acres,
-      //     patta,
-      //     bargadar_name,
-      //     barga_share_area_in_acres,
-      //     distance_from_nh_meters,
-      //     distance_from_metalled_road_meters,
-      //     market_value_as_per_egov_assessment,
-      //     coal_mining_value,
-      //     lao_assessed_value,
-      //     plotno
-      //  FROM
-      //     vw_land_records
-      //  GROUP BY
-      //     plot_id,
-      //     objectid,
-      //     mouza_name,
-      //     category,
-      //     lr_plot_no,
-      //     rs_plot_no,
-      //     total_area_in_acres,
-      //     classification,
-      //     present_use,
-      //     area_owned_in_acres,
-      //     patta,
-      //     bargadar_name,
-      //     barga_share_area_in_acres,
-      //     distance_from_nh_meters,
-      //     distance_from_metalled_road_meters,
-      //     market_value_as_per_egov_assessment,
-      //     coal_mining_value,
-      //     lao_assessed_value,
-      //     plotno`,
       {
         type: sequelize.QueryTypes.SELECT,
         replacements: { limit: 10, offset: 0 },
       }
     );
+
+    if (!results) {
+      const error = new Error("No land records found");
+      error.statusCode = 404;
+      throw error;
+    }
+
     const filteredData = results.filter(
       (data) => data.category !== "RECORD NOT FOUND"
     );
-    return filteredData;
+    // const newData = filteredData.reduce((acc, plot) => {
+    //   const existPlot = acc.find((item) => item.plot_id === plot.plot_id);
+    //   const newOwner = {
+    //     owner_address_or_raiayat: plot.owner_address_or_raiayat,
+    //     owner_name_or_raiayat: plot.owner_name_or_raiayat,
+    //     owner_share_in_plot: plot.owner_share_in_plot,
+    //   };
+    //   if (existPlot) {
+    //     existPlot.owner.push(newOwner);
+    //   } else {
+    //     acc.push({ ...plot, owner: [newOwner] });
+    //   }
+    //   return acc;
+    // }, []);
+
+    const optData = Object.values(
+      filteredData.reduce((acc, plot) => {
+        const newOwner = {
+          plot_id: plot.plot_id,
+          lr_khatian_no: plot.lr_khatian_no,
+          owner_name_or_raiayat: plot.owner_name_or_raiayat,
+          owner_address_or_raiayat: plot.owner_address_or_raiayat,
+          owner_share_in_plot: plot.owner_share_in_plot,
+        };
+        if (!acc[plot.plot_id]) {
+          acc[plot.plot_id] = { ...plot, owner: [] };
+        }
+        acc[plot.plot_id].owner.push(newOwner);
+        return acc;
+      }, {})
+    );
+    return optData;
   } catch (error) {
     throw error;
   }
@@ -85,10 +81,24 @@ const getAllMasterLands = async () => {
       type: sequelize.QueryTypes.SELECT,
     });
     return results;
-  } catch (err) {}
+  } catch (err) { }
 };
 
-module.exports = { getAllRecords, getAllMasterLands };
+const getNewLandRecords = async () => {
+  try {
+    const results = await sequelize.query(
+      "SELECT * FROM vw_grouped_land_records",
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return results;
+  } catch (err) {
+    throw err;
+  }
+};
+
+module.exports = { getAllRecords, getAllMasterLands, getNewLandRecords };
 
 // await sequelize.query("SELECT * FROM vw_land_records LIMIT :limit OFFSET :offset", {
 //   type: sequelize.QueryTypes.SELECT,

@@ -4,6 +4,7 @@ const authRouter = require("./routes/authRoute");
 const userRoute = require("./routes/userRoute");
 const landRoute = require("./routes/landRoutes");
 const cors = require("cors");
+const requestLogger = require("./middlewares/requestLogger");
 
 require("dotenv").config();
 
@@ -11,6 +12,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(requestLogger);
+
 app.use(cors({ origin: true }));
 
 app.get("/", (req, res) => {
@@ -21,5 +24,7 @@ app.get("/", (req, res) => {
 app.use("/land", landRoute);
 app.use("/auth", authRouter);
 app.use("/user", userRoute);
+
+
 
 module.exports = app;
