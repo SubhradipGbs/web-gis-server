@@ -19,7 +19,6 @@ const getAllRecords = async () => {
       throw error;
     }
 
-
     const results = await sequelize.query(
       // `SELECT ${columnList} FROM vw_land_records LIMIT :limit OFFSET :offset`,
       `SELECT ${columnList} FROM vw_land_records`,
@@ -81,7 +80,7 @@ const getAllMasterLands = async () => {
       type: sequelize.QueryTypes.SELECT,
     });
     return results;
-  } catch (err) { }
+  } catch (err) {}
 };
 
 const getNewLandRecords = async () => {
@@ -98,7 +97,66 @@ const getNewLandRecords = async () => {
   }
 };
 
-module.exports = { getAllRecords, getAllMasterLands, getNewLandRecords };
+const getLandRecordByKhatian = async (khatian, mouza) => {
+  try {
+    const results = await sequelize.query(
+      "SELECT DISTINCT * FROM vw_land_records WHERE lr_khatian_no = :khatian AND mouza_name = :mouza",
+      {
+        replacements: {
+          khatian,
+          mouza,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    console.log(results.length);
+    return results;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getLandRecordByPlot = async (plot, mouza) => {
+  try {
+    const results = await sequelize.query(
+      "SELECT DISTINCT * FROM vw_land_records WHERE plotno = :plot AND mouza_name = :mouza",
+      {
+        replacements: {
+          plot,
+          mouza,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    console.log(results.length);
+    return results;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getAllMouza = async () => {
+  try {
+    const results = await sequelize.query(
+      "SELECT * FROM public.mouzaboundary",
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return results;
+  } catch (err) {
+    throw err;
+  }
+};
+
+module.exports = {
+  getAllRecords,
+  getAllMasterLands,
+  getNewLandRecords,
+  getAllMouza,
+  getLandRecordByKhatian,
+  getLandRecordByPlot
+};
 
 // await sequelize.query("SELECT * FROM vw_land_records LIMIT :limit OFFSET :offset", {
 //   type: sequelize.QueryTypes.SELECT,
