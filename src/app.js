@@ -25,6 +25,4 @@ app.use("/land", landRoute);
 app.use("/auth", authRouter);
 app.use("/user", userRoute);
 
-
-
 module.exports = app;
